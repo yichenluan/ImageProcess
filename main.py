@@ -16,7 +16,7 @@ def choose_pic():
     global width
     global height
     filepath=tkFileDialog.askopenfilename()
-    if filepath!= '':
+    if filepath:
         filepath_pre=filepath
         img=Image.open(filepath)
         width,height=img.size
@@ -86,7 +86,56 @@ def sampling():
                 pix_sampling[i,j]=int(pix_sampling[i,j]*quantity/256)*256/(quantity-1)
         show_pic_process(img_sampling)
     
-    
+#位平面图
+def bitplane():
+    if filepath_pre=='':
+        showwarning(title='Error!',
+                    message='Please open a picture!'
+                    )
+    else:
+        global img_bitplane
+        img_bitplane=Image.new('L',img.size)
+        img_pre=img.convert('L')
+        img_new=Image.new('L',(600,600))
+        pix_pre=img_pre.load()
+        pix_bitplane=img_bitplane.load()
+        for plane in range(8):
+            for i in range(width):
+                for j in range(height):
+                    pix_len=len(bin(pix_pre[i,j]))
+                    if (plane>pix_len-3):
+                        pix_now=0
+                    else:
+                        pix_now=int(bin(pix_pre[i,j])[pix_len-plane-1])
+                    if (pix_now):
+                        pix_now=255
+                    pix_bitplane[i,j]=pix_now
+            if (plane==0):
+                box=(0,1,148,299)
+            if (plane==1):
+                box=(150,1,298,299)
+            if (plane==2):
+                box=(300,1,448,299)
+            if (plane==3):
+                box=(450,1,598,299)
+            if (plane==4):
+                box=(0,301,148,599)
+            if (plane==5):
+                box=(150,301,298,599)
+            if (plane==6):
+                box=(300,301,448,599)
+            if (plane==7):
+                box=(450,301,598,599)
+            region=img_bitplane.resize((148,298))
+            img_new.paste(region,box)
+        pic_bitplane=Toplevel()
+        cv_bitplane=Canvas(pic_bitplane,width=600,height=600)
+        img_process=ImageTk.PhotoImage(img_new)
+        cv_bitplane.create_image((300,300),image=img_process)
+        cv_bitplane.img_process=img_process
+        cv_bitplane.pack()
+
+
 #图像信息
 def info():
     if filepath_pre=='':
@@ -140,6 +189,7 @@ Calmenu.add_cascade(label='采样',menu=Simple)
 Calmenu.add_cascade(label='量化',menu=Quantify)
 menubar.add_cascade(label='采样和量化',menu=Calmenu)
 
+menubar.add_command(label='位平面图',command=bitplane)
 menubar.add_command(label='图片信息',command=info)
 
 root['menu']=menubar
