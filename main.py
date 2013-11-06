@@ -139,6 +139,76 @@ def nlinear_fa():
     show_hist_process(img_nl_fa)
 
 
+
+#最邻近插值
+
+def testest():
+    global value_nearest
+    value_nearest=StringVar()
+    c_nearest=Toplevel()
+    Label(c_nearest,text='请选择缩放倍数 :',width=20).grid(row=0,column=0)
+    sca=Scale(c_nearest,from_=-4,to=4,orient=HORIZONTAL,variable=value_nearest).grid(row=1,column=0)
+    Button(c_nearest,text='确定',command=nearest).grid(row=2,column=0)
+
+def nearest():
+    num =  int(value_nearest.get())
+    multiple=[0.1,0.25,0.5,0.75,1,1.5,2,2.5,3]
+    multi=multiple[num+4]
+    new_width = int(width * multi)
+    new_height = int(height * multi)
+    nearest_img=Image.new('RGB',(new_width,new_height))
+    L_img=img
+    pix_nearest=nearest_img.load()
+    pix_img=L_img.load()
+    for i in range(new_width):
+        for j in range(new_height):
+            x  = int(i/multi)
+            y = int(j/multi)
+            pix_nearest[i,j]=pix_img[x,y]
+    show_pic_process(nearest_img)
+    #show_hist_process(nearest_img)
+
+    
+def bili():
+    global value_bili
+    value_bili=StringVar()
+    c_nearest=Toplevel()
+    Label(c_nearest,text='请选择缩放倍数 :',width=20).grid(row=0,column=0)
+    sca=Scale(c_nearest,from_=-4,to=4,orient=HORIZONTAL,variable=value_bili).grid(row=1,column=0)
+    Button(c_nearest,text='确定',command=bilinear).grid(row=2,column=0)
+
+#双线性插值
+def bilinear():
+    num= int(value_bili.get())
+    multiple=[0.1,0.25,0.5,0.75,1,1.5,2,2.5,3]
+    multi=multiple[num+4]
+    new_width = int(width*multi)
+    new_height = int(height*multi)
+    bili_img=Image.new('RGB',(new_width,new_height))
+    pix_bili=bili_img.load()
+    pix_img=img.load()
+    for i in range(new_width):
+        for j in range(new_height):
+            x=float(i)/multi
+            y=float(j)/multi
+            u= x - int(x)
+            v= y - int(y)
+            if int(x) ==width-1 or int(y)== height-1:
+                pix_bili[i,j]=pix_img[int(x),int(y)]
+            else:
+                pix_r=(1-u)*(1-v)*pix_img[int(x),int(y)][0]+(1-u)*v*pix_img[int(x),int(y)+1][0]+u*(1-v)*pix_img[int(x)+1,int(y)][0]+u*v*pix_img[int(x)+1,int(y)+1][0]
+                pix_g=(1-u)*(1-v)*pix_img[int(x),int(y)][1]+(1-u)*v*pix_img[int(x),int(y)+1][1]+u*(1-v)*pix_img[int(x)+1,int(y)][1]+u*v*pix_img[int(x)+1,int(y)+1][1]
+                pix_b=(1-u)*(1-v)*pix_img[int(x),int(y)][2]+(1-u)*v*pix_img[int(x),int(y)+1][2]+u*(1-v)*pix_img[int(x)+1,int(y)][2]+u*v*pix_img[int(x)+1,int(y)+1][2]
+                pix_bili[i,j]=(int(pix_r),int(pix_g),int(pix_b))
+    show_pic_process(bili_img)
+    show_hist_process(bili_img)
+
+
+
+
+
+
+
 #采样和量化
 def sampling():
     if filepath_pre=='':
@@ -323,6 +393,14 @@ Oper_menu.add_cascade(label='非线性减弱',menu=nLinear_fade)
 menubar.add_cascade(label='点运算',menu=Oper_menu)
 
 Geomenu=Menu(menubar,tearoff=0)
+zoom=Menu(Geomenu,tearoff=0)
+rotate=Menu(Geomenu,tearoff=0)
+translation=Menu(Geomenu,tearoff=0)
+Geomenu.add_command(label='旋转')
+Geomenu.add_command(label='平移')
+zoom.add_radiobutton(label='最邻近插值',command=testest)
+zoom.add_radiobutton(label='双线性插值',command=bili)
+Geomenu.add_cascade(label='缩放',menu=zoom)
 menubar.add_cascade(label='几何运算',menu=Geomenu)
 
 
