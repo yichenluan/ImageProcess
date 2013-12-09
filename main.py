@@ -12,7 +12,16 @@ from math import *
 filepath=''
 filepath_pre=''
 
+
+#*****************************************************************#
+#图像编码压缩
+#
+#包括：huffman编码，Fano编码，游程编码 和算术编码
+#*****************************************************************#
 class Node:
+    '''树节点类
+
+    '''
     def __init__(self, value = None, pix = None, huffAns = '', parent = None, left = None, right = None):
         self.value = value
         self.pix = pix
@@ -20,7 +29,11 @@ class Node:
         self.parent = parent
         self.left = left
         self.right = right 
+
 def huffman():
+    '''huffman编码压缩
+
+    '''
     imgHuff = img.convert('L')
     imgPix = imgHuff.load()
     allPix = width * height
@@ -62,12 +75,16 @@ def huffman():
         while tempNode.parent :
             dicPix[k].huffAns = tempNode.huffAns + dicPix[k].huffAns
             tempNode = tempNode.parent
-    print('*********************************')
+    print('*****************Huffman编码****************')
     for k,v in dicPix.items():
         print k,    v.huffAns
-    print('*********************************')
+    print('*****************Huffman编码****************')
+
 
 def fano():
+    '''Fano编码压缩
+
+    '''
     imgFano = img.convert('L')
     imgPix = imgFano.load()
     allPix = width * height
@@ -110,17 +127,59 @@ def fano():
         while tempNode.parent :
             dicPix[k].huffAns = str(tempNode.huffAns) + dicPix[k].huffAns
             tempNode = tempNode.parent
-    print('------------------------------------')
+    print('-------------------Fano编码-------------------')
     for k,v in dicPix.items():
         print k,    v.huffAns
-    print('------------------------------------')
+    print('-------------------Fano编码-------------------')
+
+def rle():
+    '''游程编码压缩
+
+    '''
+    imgRle = img.convert('L')
+    pixRle = imgRle.load()
+    listRle = list()
+    for i in range(width):
+        numRle = 0
+        pixNum = pixRle[i,0]
+        for j in range(height):
+            if j ==height -1:
+                if pixRle[i,j] == pixNum:
+                    numRle += 1
+                    listRle.append((pixNum,numRle))
+                else :
+                    listRle.append((pixRle[i,j],1))
+            else:
+                if pixRle[i,j] == pixNum :
+                    numRle += 1
+                else :
+                    listRle.append((pixNum,numRle))
+                    pixNum = pixRle[i,j]
+                    numRle = 1
+    numPlus = 0
+    strPlus = ''
+    print('++++++++++++++++++++++游程编码++++++++++++++++++++++++')
+    for (k,v) in listRle:
+        numPlus += 1
+        strPlus += str(k)+':'+str(v)+'\t'
+        if numPlus == 8 :
+            print strPlus
+            numPlus = 0
+            strPlus = ''
+    print('++++++++++++++++++++++游程编码++++++++++++++++++++++++')
+
+def figure():
+    print('..............................................')
+
+
          
         
         
-
-
-
-
+#*******************************************************#
+#基本功能
+#
+#包括 打开图像，保存图像，另存为，显示直方图
+#*******************************************************#
 def choose_pic():
     '''选择图像函数
     
@@ -161,6 +220,9 @@ def show_pic_process(img):
 
 
 def saved():
+    '''保存函数
+
+    '''
     global img
     filepath_saved='/home/warlock/Desktop/temp'
     os.rename(filepath,filepath_saved)
@@ -199,7 +261,7 @@ def show_hist_process(im):
 
 
 def save_pic():
-    '''另保为函数
+    '''另存为函数
 
     在弹出框中选择保存路径和格式'''
     save_filepath=tkFileDialog.asksaveasfilename(defaultextension='.jpg',filetypes=([('JPG','*.jpg'),('PNG','*.png'),('GIF','*.gif')]))
@@ -207,10 +269,11 @@ def save_pic():
         im_process.save(save_filepath)
 
 
-##
+##**********************************************************#
 #图像增强
 #
 #包括: convolution, smoothen, sharpen, c_convolute, convolute  
+#**********************************************************#
 
 def convolution(pix):
     '''计算卷积函数
@@ -242,6 +305,9 @@ def convolution(pix):
                 pix[i,j] = (int(sum_r), int(sum_g), int(sum_b))
 
 def l_convolute(pix):
+    '''对灰度图进行卷积运算
+
+    '''
     global img_l
     img_pre = img.convert('L')
     pix_pre = img_pre.load()
@@ -320,21 +386,32 @@ def convolute ():
     show_pic_process(img_con)
     show_hist_process(img_con)
     imgProcess = img_con
-     
+
+#***********************************************************#
+#图像分割
+#
+#包括拉普拉斯边缘检测，8方向kirsch边缘检测
+#************************************************************#     
 
 def edge_laplace():
+    '''拉普拉斯边缘检测
+
+    '''
     global mod
     global imgProcess
-    img_laplace = Image.new('RGB',img.size)
+    img_laplace = Image.new('L',img.size)
     pix_laplace = img_laplace.load()
     mod = [1, 1, 1, 1, -8, 1, 1, 1 ,1]
-    convolution(pix_laplace)
+    l_convolute(pix_laplace)
     show_pic_process(img_laplace)
     show_hist_process(img_laplace)
     imgProcess = img_laplace
     
 
 def edge_kirsch():
+    '''kirsch边缘检测
+
+    '''
     global mod
     global imgProcess
     img_kirsch = Image.new('L',img.size)
@@ -393,10 +470,11 @@ def convert_L():
         show_hist_process(img_convert)
         imgProcess = img_convert
 
-##
-#傅立叶变换和离散余弦变换
+##****************************************************#
+#OpenCV
 #
-#包括: FFT, FImage, four, lisanyuxian
+#包括: 傅立叶变换，离散余弦变换，和canny边缘检测
+#*****************************************************#
 def FFT(image,flag=0):
     w = image.width
     h = image.height
@@ -452,6 +530,9 @@ def lisanyuxian():
     cv.WaitKey(0)
 
 def canny():
+    '''边缘检测
+
+    '''
     img1 = cv.LoadImage(filepath,0)
     PCannyImg = cv.CreateImage(cv.GetSize(img1), cv.IPL_DEPTH_8U,1)
     cv.Canny(img1,PCannyImg,50,150,3)
@@ -461,36 +542,16 @@ def canny():
 
 
 
-
-def hist_equ():
-    '''均衡化函数
-
-
-    将灰度图均衡化后显示'''
-    global imgProcess
-    img_equ=Image.new('L',img.size)
-    img_L=img.convert('L')
-    pix_equ=img_equ.load()
-    pix_img_L=img_L.load()
-    hist=[0 for i in range(256)]
-    pix_new=0
-    for i in range(width):
-        for j in range(height):
-            hist[pix_img_L[i,j]]+=1
-    for i in range(width):
-        for j in range(height):
-            for k in range(pix_img_L[i,j]+1):
-                pix_new+=hist[k]
-            pix_equ[i,j]=int(255*(float((pix_new-hist[0]))/(width*height-hist[0])))
-            pix_new=0
-    show_pic_process(img_equ)
-    show_hist_process(img_equ)
-    imgProcess = img_equ
-                
-
-    
+#*****************************************************#
+#数学形态学
+#
+#包括图像细化，直线检测，圆的检测
+#*****************************************************#   
 
 def thin():
+    '''图像细化
+    
+    采用zhang并行图像细化算法'''
     global imgProcess
     dicPix = {}
     imgThin = img.convert('L')
@@ -590,6 +651,9 @@ def thin():
 
 
 def circleCheck():
+    '''圆的检测
+
+    基于hough变换的一种改进方法'''
     global imgProcess
     imgPre = img.convert('L')
     imgPix = imgPre.load()
@@ -705,17 +769,6 @@ def circleCheck():
     show_pic_process(imgPre)
     show_hist_process(imgPre)
     imgProcess = imgPre
-            
-
-   
-    
-
-
-                    
-
-
-                    
-
 
 def lineChoose():
     global valueLine
@@ -726,6 +779,9 @@ def lineChoose():
     Button(cLine,text='ok',command=houghLine).grid(row=2,column=0)
 
 def houghLine():
+    '''直线检测
+
+    霍夫变换检测方法'''
     global mod
     global imgProcess
     threshold = int(valueLine.get())
@@ -777,10 +833,35 @@ def houghLine():
 
 
 
-    
-    
+#********************************************#    
+#点运算
+#
+#包括灰度图的均衡化，线性非线性增强减弱
+#********************************************#
+def hist_equ():
+    '''均衡化函数
 
 
+    将灰度图均衡化后显示'''
+    global imgProcess
+    img_equ=Image.new('L',img.size)
+    img_L=img.convert('L')
+    pix_equ=img_equ.load()
+    pix_img_L=img_L.load()
+    hist=[0 for i in range(256)]
+    pix_new=0
+    for i in range(width):
+        for j in range(height):
+            hist[pix_img_L[i,j]]+=1
+    for i in range(width):
+        for j in range(height):
+            for k in range(pix_img_L[i,j]+1):
+                pix_new+=hist[k]
+            pix_equ[i,j]=int(255*(float((pix_new-hist[0]))/(width*height-hist[0])))
+            pix_new=0
+    show_pic_process(img_equ)
+    show_hist_process(img_equ)
+    imgProcess = img_equ
 
 def linear_en():
     global imgProcess
@@ -819,9 +900,11 @@ def nlinear_fa():
     imgProcess = img_nl_fa
 
 
-
-
-
+#*************************************************************#
+#几何运算 
+#
+#包括最邻近放大缩小，双线性放大缩小,平移和旋转
+#*************************************************************#
 def near():
     global value_nearest
     value_nearest=StringVar()
@@ -831,6 +914,9 @@ def near():
     Button(c_nearest,text='确定',command=nearest).grid(row=2,column=0)
 
 def nearest():
+    '''最临近放大缩小
+
+    '''
     global imgProcess
     num =  int(value_nearest.get())
     multiple=[0.1,0.25,0.5,0.75,1,1.5,2,2.5,3]
@@ -860,6 +946,9 @@ def bili():
     Button(c_nearest,text='确定',command=bilinear).grid(row=2,column=0)
 
 def bilinear():
+    '''双线性放大缩小
+
+    '''
     global imgProcess
     num= int(value_bili.get())
     multiple=[0.1,0.25,0.5,0.75,1,1.5,2,2.5,3]
@@ -896,6 +985,9 @@ def trans():
     Button(c_translation,text='确定',command=translate).grid(row=2,column=0)
 
 def translate():
+    '''平移
+
+    '''
     global imgProcess
     translating=int(value_trans.get())
     img_trans=Image.new('RGB',(width,height))
@@ -922,6 +1014,9 @@ def rot():
 
 
 def rotating():
+    '''旋转
+
+    '''
     global imgProcess
     angle=-int(value_rot.get())
     img_rotating=img.rotate(angle)
@@ -931,10 +1026,11 @@ def rotating():
 
 
 
-
-
-
-
+#**************************************************#
+#采样和量化
+#
+#
+#**************************************************#
 def sampling():
     '''采样和量化函数
 
@@ -970,9 +1066,12 @@ def sampling():
         imgProcess = img_sampling
     
 
-#****************************************
+#****************************************#
 #真彩色转256色图像
+#
 #包括 palette,pair,bmpconvert
+#****************************************#
+
 def palette():
     global rgb_large
     global bit_tuple
@@ -1041,10 +1140,11 @@ def bmpconvert():
     show_hist_process(bmp_img)
 
 
-            
-    
-    
-    
+#*****************************************************#            
+#显示8个位平面图   
+#    
+#
+#*****************************************************#    
 def bitplane():
     '''位平面图函数
 
@@ -1174,7 +1274,14 @@ def info():
         infor.pack()
 
 
-#---------
+
+
+######################################################################################
+#界面部分代码
+#
+#
+#************************************************************************************#
+
 root=Tk()
 root.title('数字图像处理')
 menubar=Menu(root)
@@ -1280,13 +1387,13 @@ houghmenu.add_command(label = '霍夫变换检测直线', command = lineChoose)
 houghmenu.add_command(label = '检测圆形', command = circleCheck)
 menubar.add_cascade(label = '数学形态学', menu = houghmenu)
 
-#yasuo
+#编码压缩
 compressMenu = Menu(menubar, tearoff = 0)
-compressMenu.add_command(label = 'Huffman', command = huffman)
-compressMenu.add_command(label = 'Fano', command = fano)
-compressMenu.add_command(label = 'Rle')
-compressMenu.add_command(label = 'Figure')
-menubar.add_cascade(label = 'yasuo', menu = compressMenu)
+compressMenu.add_command(label = 'Huffman编码', command = huffman)
+compressMenu.add_command(label = 'Fano编码', command = fano)
+compressMenu.add_command(label = '游程编码', command = rle)
+compressMenu.add_command(label = '算术编码', command = figure)
+menubar.add_cascade(label = '编码压缩', menu = compressMenu)
 
 
 #Opencv进行图像处理
