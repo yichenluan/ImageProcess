@@ -75,6 +75,7 @@ def huffman():
         while tempNode.parent :
             dicPix[k].huffAns = tempNode.huffAns + dicPix[k].huffAns
             tempNode = tempNode.parent
+    print('\n'*4)
     print('*****************Huffman编码****************')
     for k,v in dicPix.items():
         print k,    v.huffAns
@@ -127,6 +128,7 @@ def fano():
         while tempNode.parent :
             dicPix[k].huffAns = str(tempNode.huffAns) + dicPix[k].huffAns
             tempNode = tempNode.parent
+    print('\n'*4)
     print('-------------------Fano编码-------------------')
     for k,v in dicPix.items():
         print k,    v.huffAns
@@ -158,18 +160,17 @@ def rle():
                     numRle = 1
     numPlus = 0
     strPlus = ''
+    print('\n'*4)
     print('++++++++++++++++++++++游程编码++++++++++++++++++++++++')
     for (k,v) in listRle:
         numPlus += 1
-        strPlus += str(k)+':'+str(v)+'\t'
-        if numPlus == 8 :
+        strPlus += str(k)+':'+str(v)+'\t'*2
+        if numPlus == 6 :
             print strPlus
             numPlus = 0
             strPlus = ''
     print('++++++++++++++++++++++游程编码++++++++++++++++++++++++')
 
-def figure():
-    print('..............................................')
 
 
          
@@ -735,18 +736,45 @@ def circleCheck():
     
     circleA = list()
     circleB = list()
+    circleC = list()
+    circleD = list()
     for i in range(width):
         for j in range(height):
             if imgPix[i,j]!= 0:
                 continue
             ra = int(sqrt((i - circleLevelA)**2 + (j - circleUplevelA)**2))
             rb = int(sqrt((i - circleLevelB)**2 + (j - circleUplevelB)**2))
+            rc = int(sqrt((i - circleLevelA)**2 + (j - circleUplevelB)**2))
+            rd = int(sqrt((i - circleLevelB)**2 + (j - circleUplevelA)**2))
             circleA.append(ra)
             circleB.append(rb)
+            circleC.append(rc)
+            circleD.append(rd)
     dicCircleA = dict([(circleA.count(i),i) for i in circleA])
-    ra = dicCircleA[max(dicCircleA.keys())] 
+    ra,numA = dicCircleA[max(dicCircleA.keys())] ,max(dicCircleA.keys())
     dicCircleB = dict([(circleB.count(i),i) for i in circleB])
-    rb = dicCircleB[max(dicCircleB.keys())] 
+    rb,numB = dicCircleB[max(dicCircleB.keys())] ,max(dicCircleB.keys())
+    dicCircleC = dict([(circleC.count(i),i) for i in circleC])
+    rc,numC = dicCircleC[max(dicCircleC.keys())] ,max(dicCircleC.keys())
+    dicCircleD = dict([(circleD.count(i),i) for i in circleD])
+    rd,numD = dicCircleD[max(dicCircleD.keys())] ,max(dicCircleD.keys())
+
+    if max(numA,numB,numC,numD) == numA or max(numA,numB,numC,numD) == numB:
+        circleLevelA = circleLevelA
+        circleUplevelA = circleUplevelA
+        circleLevelB = circleLevelB
+        circleUplevelB = circleUplevelB
+    if max(numA,numB,numC,numD) == numC or max(numA,numB,numC,numD) == numD:
+        circleLevelA = circleLevelA
+        tmp = circleUplevelA
+        circleUplevelA = circleUplevelB
+        circleLevelB = circleLevelB
+        circleUplevelB = tmp
+        ra = rc
+        rb = rd
+        
+
+
     circleDraw = ImageDraw.Draw(imgPre)
     circleDraw.line(((circleLevelA,circleUplevelA+ra),(circleLevelA,circleUplevelA+10)),fill = 0)
     circleDraw.line(((circleLevelA,circleUplevelA-10),(circleLevelA,circleUplevelA-ra)),fill = 0)
@@ -1392,7 +1420,6 @@ compressMenu = Menu(menubar, tearoff = 0)
 compressMenu.add_command(label = 'Huffman编码', command = huffman)
 compressMenu.add_command(label = 'Fano编码', command = fano)
 compressMenu.add_command(label = '游程编码', command = rle)
-compressMenu.add_command(label = '算术编码', command = figure)
 menubar.add_cascade(label = '编码压缩', menu = compressMenu)
 
 
